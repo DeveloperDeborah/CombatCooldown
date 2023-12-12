@@ -17,11 +17,18 @@ public class CombatMonitor implements IPluginDisabled
 
 	public void leaveCombat(IPlayer player)
 	{
-		if (this.combatTimers.containsKey(player))
+		if (!this.combatTimers.containsKey(player))
+			return;
+
+		if (!player.isPvPFlagged() && !player.isDead() && !player.isSpectator() && !player.isCreative() && !player.isVanished())
 		{
-			this.combatTimers.remove(player);
-			player.sendColouredMessage(config.getLeavingCombatMessage());
+			// Don't let a player leave combat if they hid in a non-pvp region
+			playerHidingOutsidePVPRegion(player);
+			return;
 		}
+		this.warningTimers.remove(player);
+		this.combatTimers.remove(player);
+		player.sendColouredMessage(config.getLeavingCombatMessage());
 	}
 
 	public boolean isInCombat(IPlayer player)
@@ -71,6 +78,12 @@ public class CombatMonitor implements IPluginDisabled
 
 	private void registerPlayerTimer(final IPlayer player)
 	{
+		if (this.warningTimers.containsKey(player))
+		{
+			this.scheduler.cancelTask(this.warningTimers.get(player));
+			warningTimers.remove(player);
+		}
+
 		if (this.combatTimers.containsKey(player))
 		{
 			this.scheduler.cancelTask(this.combatTimers.get(player));
@@ -78,7 +91,32 @@ public class CombatMonitor implements IPluginDisabled
 		this.combatTimers.put(player, this.scheduler.startSyncTask(() -> leaveCombat(player), config.getCombatTime()));
 	}
 
+	private void playerHidingOutsidePVPRegion(IPlayer player)
+	{
+		player.sendColouredMessage(config.getWarningProtectedRegion(), config.getWarningTime());
+		if (this.warningTimers.containsKey(player))
+			this.scheduler.cancelTask(this.combatTimers.get(player));
+
+		this.warningTimers.put(player, this.scheduler.startSyncTask(() ->
+		{
+			// Last minute gamemode check
+			if (player.isSpectator() || player.isCreative() || player.isVanished())
+			{
+				leaveCombat(player);
+				return;
+			}
+
+			if (player.isPvPFlagged())
+			{
+				engagePlayer(player);
+				return;
+			}
+			player.setHealth(0); // Player is still hiding in non-pvp region, kill them.
+		}, config.getCombatTime()));
+	}
+
 	private final ConcurrentHashMap<IPlayer, Integer> combatTimers = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<IPlayer, Integer> warningTimers = new ConcurrentHashMap<>();
 	private final IScheduler scheduler;
 	private final CombatCooldownConfig config;
 }

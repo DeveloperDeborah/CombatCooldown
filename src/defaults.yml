@@ -3,8 +3,10 @@
 warningEnteringCombat: "&4You are now entering PvP combat."
 warningLeavingCombat: "&4You are now leaving PvP combat."
 warningNoCommandInCombat: "&4You may not do this during PvP combat."
+warningProtectedRegion: "&4You may not go into non-pvp regions while in combat. You have %d seconds to return."
 shouldIncludeDergons: true
 combatTime: 30
+warningTime: 10
 worlds:
  - world
  - world_nether
