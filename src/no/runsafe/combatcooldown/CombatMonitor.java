@@ -58,14 +58,15 @@ public class CombatMonitor implements IPluginDisabled
 
 	public void engageInCombat(IPlayer firstPlayer, IPlayer secondPlayer)
 	{
-		if (this.monitoringWorld(firstPlayer.getWorld()) && this.monitoringWorld(secondPlayer.getWorld()))
-		{
-			if (firstPlayer.isPvPFlagged() && secondPlayer.isPvPFlagged())
-			{
-				this.engagePlayer(firstPlayer);
-				this.engagePlayer(secondPlayer);
-			}
-		}
+		if (!this.monitoringWorld(firstPlayer.getWorld())
+			|| !this.monitoringWorld(secondPlayer.getWorld())
+			|| !firstPlayer.isPvPFlagged()
+			|| !secondPlayer.isPvPFlagged()
+		)
+			return;
+
+		this.engagePlayer(firstPlayer);
+		this.engagePlayer(secondPlayer);
 	}
 
 	private void engagePlayer(IPlayer player)
@@ -85,9 +86,8 @@ public class CombatMonitor implements IPluginDisabled
 		}
 
 		if (this.combatTimers.containsKey(player))
-		{
 			this.scheduler.cancelTask(this.combatTimers.get(player));
-		}
+
 		this.combatTimers.put(player, this.scheduler.startSyncTask(() -> leaveCombat(player), config.getCombatTime()));
 	}
 
