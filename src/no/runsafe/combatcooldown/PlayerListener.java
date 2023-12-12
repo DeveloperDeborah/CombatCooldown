@@ -46,7 +46,7 @@ public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDea
 		IPlayer player = event.getPlayer();
 		if (combatMonitor.isInCombat(player))
 		{
-			player.damage(500D); // This should kill them
+			player.setHealth(0); // This should kill them
 			ILocation location = player.getLocation();
 			if (location != null)
 				location.playEffect(effect, 0.3F, 100, 50);
