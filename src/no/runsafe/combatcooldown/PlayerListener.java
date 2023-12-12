@@ -16,7 +16,7 @@ import no.runsafe.framework.minecraft.event.player.RunsafePlayerQuitEvent;
 
 public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDeathEvent, IPlayerQuitEvent
 {
-	public PlayerListener(CombatMonitor combatMonitor, IDebug console, CombatCooldownConfig config)
+	public PlayerListener(CombatMonitor combatMonitor, IDebug console, Config config)
 	{
 		this.combatMonitor = combatMonitor;
 		this.debugger = console;
@@ -67,6 +67,6 @@ public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDea
 
 	private final CombatMonitor combatMonitor;
 	private final IDebug debugger;
-	private final CombatCooldownConfig config;
+	private final Config config;
 	private final IWorldEffect effect;
 }

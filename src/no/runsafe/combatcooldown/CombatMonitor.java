@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CombatMonitor implements IPluginDisabled
 {
-	public CombatMonitor(IScheduler scheduler, CombatCooldownConfig config)
+	public CombatMonitor(IScheduler scheduler, Config config)
 	{
 		this.scheduler = scheduler;
 		this.config = config;
@@ -118,5 +118,5 @@ public class CombatMonitor implements IPluginDisabled
 	private final ConcurrentHashMap<IPlayer, Integer> combatTimers = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<IPlayer, Integer> warningTimers = new ConcurrentHashMap<>();
 	private final IScheduler scheduler;
-	private final CombatCooldownConfig config;
+	private final Config config;
 }

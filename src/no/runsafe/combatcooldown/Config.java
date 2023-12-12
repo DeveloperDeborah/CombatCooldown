@@ -5,7 +5,7 @@ import no.runsafe.framework.api.event.plugin.IConfigurationChanged;
 
 import java.util.List;
 
-public class CombatCooldownConfig implements IConfigurationChanged
+public class Config implements IConfigurationChanged
 {
 	@Override
 	public void OnConfigurationChanged(IConfiguration configuration)

@@ -8,7 +8,7 @@ public class Plugin extends RunsafeConfigurablePlugin
 	@Override
 	protected void pluginSetup()
 	{
-		this.addComponent(CombatCooldownConfig.class);
+		this.addComponent(Config.class);
 		this.addComponent(Events.class);
 		this.addComponent(CombatMonitor.class);
 		this.addComponent(EntityListener.class);
