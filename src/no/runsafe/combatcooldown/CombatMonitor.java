@@ -54,8 +54,17 @@ public class CombatMonitor implements IPluginDisabled
 		if (!this.monitoringWorld(firstPlayer.getWorld()) || !this.monitoringWorld(secondPlayer.getWorld()))
 			return;
 
-		if (!firstPlayer.isPvPFlagged() || !secondPlayer.isPvPFlagged())
+		Plugin.Debugger.debugFine("engageInCombat world check succeeded");
+
+		if (!firstPlayer.isPvPFlagged())
 			return;
+
+		Plugin.Debugger.debugFine("Player %s is pvp flagged", firstPlayer);
+
+		if (!secondPlayer.isPvPFlagged())
+			return;
+
+		Plugin.Debugger.debugFine("Player %s is pvp flagged", secondPlayer);
 
 		this.engagePlayer(firstPlayer);
 		this.engagePlayer(secondPlayer);
