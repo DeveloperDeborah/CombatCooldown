@@ -1,26 +1,19 @@
 package no.runsafe.combatcooldown;
 
-import no.runsafe.framework.api.IServer;
 import no.runsafe.framework.api.event.entity.IEntityDamageByEntityEvent;
 import no.runsafe.framework.api.event.player.IPlayerCustomEvent;
-import no.runsafe.framework.api.log.IDebug;
 import no.runsafe.framework.api.player.IPlayer;
 import no.runsafe.framework.minecraft.entity.ProjectileEntity;
 import no.runsafe.framework.minecraft.entity.RunsafeEntity;
-import no.runsafe.framework.minecraft.entity.RunsafeLivingEntity;
 import no.runsafe.framework.minecraft.entity.RunsafeProjectile;
 import no.runsafe.framework.minecraft.event.entity.RunsafeEntityDamageByEntityEvent;
 import no.runsafe.framework.minecraft.event.player.RunsafeCustomEvent;
 
-import java.util.List;
-
 public class EntityListener implements IEntityDamageByEntityEvent, IPlayerCustomEvent
 {
-	public EntityListener(CombatMonitor combatMonitor, IDebug debugger, IServer server)
+	public EntityListener(CombatMonitor combatMonitor)
 	{
 		this.combatMonitor = combatMonitor;
-		this.debugger = debugger;
-		this.server = server;
 	}
 
 	@Override
@@ -34,7 +27,7 @@ public class EntityListener implements IEntityDamageByEntityEvent, IPlayerCustom
 			return;
 
 		combatMonitor.engageInDergonCombat(player);
-		this.debugger.debugFine(String.format(
+		Plugin.Debugger.debugFine(String.format(
 			"Player %s is being picked up by a Dergon - Blocking Commands if able.",
 			player.getName()
 		));
@@ -53,7 +46,7 @@ public class EntityListener implements IEntityDamageByEntityEvent, IPlayerCustom
 		IPlayer attackingPlayer = null;
 		RunsafeEntity attacker = event.getDamageActor();
 
-		this.debugger.debugFine(String.format(
+		Plugin.Debugger.debugFine(String.format(
 			"Player %s is being attacked by a %s.",
 			victim.getName(),
 			attacker.getEntityType().getName()
@@ -70,40 +63,23 @@ public class EntityListener implements IEntityDamageByEntityEvent, IPlayerCustom
 
 		if (attackingPlayer == null)
 		{
-			this.debugger.debugFine("Victim is not being attacked by a player.");
+			Plugin.Debugger.debugFine("Victim is not being attacked by a player.");
 			return;
 		}
 
-		if (attackingPlayer.isVanished() || attackingPlayer.shouldNotSee(victim) || isSamePlayer(victim, attackingPlayer))
+		if (attackingPlayer.isVanished() || attackingPlayer.shouldNotSee(victim) || victim.equals(attackingPlayer))
 		{
-			this.debugger.debugFine("Victim being attacked by exempted player.");
+			Plugin.Debugger.debugFine("Victim being attacked by exempted player.");
 			return;
 		}
 
 		this.combatMonitor.engageInCombat(attackingPlayer, victim);
-		this.debugger.debugFine(String.format(
+		Plugin.Debugger.debugFine(String.format(
 			"Player %s engaged in PvP with %s - Blocking commands",
 			attackingPlayer.getName(),
 			victim.getName()
 		));
 	}
 
-	private boolean isSamePlayer(IPlayer one, IPlayer two)
-	{
-		return one.equals(two);
-	}
-
-	private IPlayer findPlayer(RunsafeLivingEntity entity)
-	{
-		List<IPlayer> onlinePlayers = server.getOnlinePlayers();
-		for (IPlayer player : onlinePlayers)
-			if (entity != null && player != null && entity.getEntityId() == player.getEntityId())
-				return player;
-
-		return null;
-	}
-
 	private final CombatMonitor combatMonitor;
-	private final IDebug debugger;
-	private final IServer server;
 }

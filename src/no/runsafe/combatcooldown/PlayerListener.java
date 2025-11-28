@@ -5,7 +5,6 @@ import no.runsafe.framework.api.IWorldEffect;
 import no.runsafe.framework.api.event.player.IPlayerCommandPreprocessEvent;
 import no.runsafe.framework.api.event.player.IPlayerDeathEvent;
 import no.runsafe.framework.api.event.player.IPlayerQuitEvent;
-import no.runsafe.framework.api.log.IDebug;
 import no.runsafe.framework.api.player.IPlayer;
 import no.runsafe.framework.minecraft.Item;
 import no.runsafe.framework.minecraft.WorldBlockEffect;
@@ -16,10 +15,9 @@ import no.runsafe.framework.minecraft.event.player.RunsafePlayerQuitEvent;
 
 public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDeathEvent, IPlayerQuitEvent
 {
-	public PlayerListener(CombatMonitor combatMonitor, IDebug console, CombatCooldownConfig config)
+	public PlayerListener(CombatMonitor combatMonitor, Config config)
 	{
 		this.combatMonitor = combatMonitor;
-		this.debugger = console;
 		this.config = config;
 		effect = new WorldBlockEffect(WorldBlockEffectType.BLOCK_DUST, Item.BuildingBlock.Bedrock);
 	}
@@ -31,26 +29,26 @@ public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDea
 		String playerName = player.getName();
 		String commandString = event.getMessage();
 
-		debugger.debugFine("Checking if %s is engaged in combat", playerName);
-		if (this.combatMonitor.isInCombat(player) && !canRunCommand(player, commandString))
-		{
-			debugger.debugFine("Blocking %s from running command %s during combat", playerName, commandString);
-			event.cancel();
-			player.sendColouredMessage(config.getNoCommandsInCombatMessage());
-		}
+		Plugin.Debugger.debugFine("Checking if %s is engaged in combat", playerName);
+		if (!this.combatMonitor.isInCombat(player) || canRunCommand(player, commandString))
+			return;
+
+		Plugin.Debugger.debugFine("Blocking %s from running command %s during combat", playerName, commandString);
+		event.cancel();
+		player.sendColouredMessage(config.getNoCommandsInCombatMessage());
 	}
 
 	@Override
 	public void OnPlayerQuit(RunsafePlayerQuitEvent event)
 	{
 		IPlayer player = event.getPlayer();
-		if (combatMonitor.isInCombat(player))
-		{
-			player.setHealth(0); // This should kill them
-			ILocation location = player.getLocation();
-			if (location != null)
-				location.playEffect(effect, 0.3F, 100, 50);
-		}
+		if (!combatMonitor.isInCombat(player))
+			return;
+
+		player.setHealth(0); // This should kill them
+		ILocation location = player.getLocation();
+		if (location != null)
+			location.playEffect(effect, 0.3F, 100, 50);
 	}
 
 	@Override
@@ -66,7 +64,6 @@ public class PlayerListener implements IPlayerCommandPreprocessEvent, IPlayerDea
 	}
 
 	private final CombatMonitor combatMonitor;
-	private final IDebug debugger;
-	private final CombatCooldownConfig config;
+	private final Config config;
 	private final IWorldEffect effect;
 }

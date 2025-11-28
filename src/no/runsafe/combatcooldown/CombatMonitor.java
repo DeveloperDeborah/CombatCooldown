@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class CombatMonitor implements IPluginDisabled
 {
-	public CombatMonitor(IScheduler scheduler, CombatCooldownConfig config)
+	public CombatMonitor(IScheduler scheduler, Config config)
 	{
 		this.scheduler = scheduler;
 		this.config = config;
@@ -17,11 +17,11 @@ public class CombatMonitor implements IPluginDisabled
 
 	public void leaveCombat(IPlayer player)
 	{
-		if (this.combatTimers.containsKey(player))
-		{
-			this.combatTimers.remove(player);
-			player.sendColouredMessage(config.getLeavingCombatMessage());
-		}
+		if (!this.combatTimers.containsKey(player))
+			return;
+
+		this.combatTimers.remove(player);
+		player.sendColouredMessage(config.getLeavingCombatMessage());
 	}
 
 	public boolean isInCombat(IPlayer player)
@@ -51,14 +51,14 @@ public class CombatMonitor implements IPluginDisabled
 
 	public void engageInCombat(IPlayer firstPlayer, IPlayer secondPlayer)
 	{
-		if (this.monitoringWorld(firstPlayer.getWorld()) && this.monitoringWorld(secondPlayer.getWorld()))
-		{
-			if (firstPlayer.isPvPFlagged() && secondPlayer.isPvPFlagged())
-			{
-				this.engagePlayer(firstPlayer);
-				this.engagePlayer(secondPlayer);
-			}
-		}
+		if (!this.monitoringWorld(firstPlayer.getWorld()) || !this.monitoringWorld(secondPlayer.getWorld()))
+			return;
+
+		if (!firstPlayer.isPvPFlagged() || !secondPlayer.isPvPFlagged())
+			return;
+
+		this.engagePlayer(firstPlayer);
+		this.engagePlayer(secondPlayer);
 	}
 
 	private void engagePlayer(IPlayer player)
@@ -72,13 +72,12 @@ public class CombatMonitor implements IPluginDisabled
 	private void registerPlayerTimer(final IPlayer player)
 	{
 		if (this.combatTimers.containsKey(player))
-		{
 			this.scheduler.cancelTask(this.combatTimers.get(player));
-		}
+
 		this.combatTimers.put(player, this.scheduler.startSyncTask(() -> leaveCombat(player), config.getCombatTime()));
 	}
 
 	private final ConcurrentHashMap<IPlayer, Integer> combatTimers = new ConcurrentHashMap<>();
 	private final IScheduler scheduler;
-	private final CombatCooldownConfig config;
+	private final Config config;
 }
